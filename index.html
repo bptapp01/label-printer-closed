@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Label Printer</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+        .preview-area {
+            background: white;
+            border: 2px dashed #ccc;
+            min-height: 400px;
+            padding: 30px;
+            margin: 20px 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-content: flex-start;
+        }
+        .label-item {
+            background: white;
+            border: 1px solid #ddd;
+            padding: 20px 30px;
+            font-weight: bold;
+            color: #333;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            cursor: move;
+            position: relative;
+            min-width: 200px;
+        }
+        .label-top-right {
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            font-size: 12px;
+            font-weight: normal;
+            color: #666;
+        }
+        .label-item:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        .delete-btn {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            font-size: 14px;
+            cursor: pointer;
+            display: none;
+        }
+        .label-item:hover .delete-btn {
+            display: block;
+        }
+        .control-panel {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .color-preset, .color-preset-bg {
+            width: 30px;
+            height: 30px;
+            border-radius: 4px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        .color-preset:hover, .color-preset-bg:hover {
+            transform: scale(1.1);
+            border-color: #007bff;
+        }
+        .live-preview {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border: 1px solid #dee2e6;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .live-preview-label {
+            background: white;
+            padding: 15px 25px;
+            border: 1px solid #ddd;
+            font-weight: bold;
+            position: relative;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .live-preview-top-right {
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            font-size: 12px;
+            font-weight: normal;
+            color: #666;
+        }
+        @media print {
+            body {
+                background: white;
+            }
+            .control-panel, .no-print {
+                display: none !important;
+            }
+            .preview-area {
+                border: none;
+                min-height: auto;
+            }
+            .label-item {
+                page-break-inside: avoid;
+            }
+            .delete-btn {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <h2 class="mb-4">Brand Label Printer</h2>
+        
+        <div class="row">
+            <div class="col-md-4">
+                <div class="control-panel">
+                    <h5 class="mb-3">Label Settings</h5>
+                    
+                    <div class="live-preview">
+                        <div class="live-preview-label" id="livePreview">
+                            <span class="live-preview-top-right" id="liveTopRight"></span>
+                            <span id="liveMainText">Preview</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Label Text</label>
+                        <input type="text" class="form-control" id="labelText" placeholder="Enter brand name">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Top Right Text (Optional)</label>
+                        <input type="text" class="form-control" id="topRightText" placeholder="e.g., 56 inch panna">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Text Case</label>
+                        <select class="form-select" id="textCase">
+                            <option value="uppercase">UPPERCASE</option>
+                            <option value="lowercase">lowercase</option>
+                            <option value="capitalize">Capitalize</option>
+                            <option value="none">Normal</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Font Size (px)</label>
+                        <input type="number" class="form-control" id="fontSize" value="24" min="10" max="100">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Font Family</label>
+                        <select class="form-select" id="fontFamily">
+                            <option value="Arial">Arial</option>
+                            <option value="Helvetica">Helvetica</option>
+                            <option value="Times New Roman">Times New Roman</option>
+                            <option value="Courier New">Courier New</option>
+                            <option value="Verdana">Verdana</option>
+                            <option value="Georgia">Georgia</option>
+                            <option value="Impact">Impact</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Text Color</label>
+                        <div class="d-flex gap-2 mb-2 flex-wrap">
+                            <div class="color-preset" data-color="#000000" style="background:#000000" title="Black"></div>
+                            <div class="color-preset" data-color="#333333" style="background:#333333" title="Dark Gray"></div>
+                            <div class="color-preset" data-color="#0066cc" style="background:#0066cc" title="Blue"></div>
+                            <div class="color-preset" data-color="#cc0000" style="background:#cc0000" title="Red"></div>
+                            <div class="color-preset" data-color="#00aa00" style="background:#00aa00" title="Green"></div>
+                            <div class="color-preset" data-color="#ff6600" style="background:#ff6600" title="Orange"></div>
+                            <div class="color-preset" data-color="#9900cc" style="background:#9900cc" title="Purple"></div>
+                            <div class="color-preset" data-color="#cc6600" style="background:#cc6600" title="Brown"></div>
+                        </div>
+                        <input type="color" class="form-control form-control-color" id="textColor" value="#333333">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Background Color</label>
+                        <div class="d-flex gap-2 mb-2 flex-wrap">
+                            <div class="color-preset-bg" data-color="#ffffff" style="background:#ffffff;border:1px solid #ddd" title="White"></div>
+                            <div class="color-preset-bg" data-color="#f5f5f5" style="background:#f5f5f5" title="Light Gray"></div>
+                            <div class="color-preset-bg" data-color="#ffeb3b" style="background:#ffeb3b" title="Yellow"></div>
+                            <div class="color-preset-bg" data-color="#ffcccc" style="background:#ffcccc" title="Light Pink"></div>
+                            <div class="color-preset-bg" data-color="#ccffcc" style="background:#ccffcc" title="Light Green"></div>
+                            <div class="color-preset-bg" data-color="#cce5ff" style="background:#cce5ff" title="Light Blue"></div>
+                            <div class="color-preset-bg" data-color="#ffe5cc" style="background:#ffe5cc" title="Light Orange"></div>
+                            <div class="color-preset-bg" data-color="#e6ccff" style="background:#e6ccff" title="Light Purple"></div>
+                        </div>
+                        <input type="color" class="form-control form-control-color" id="bgColor" value="#ffffff">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Copies</label>
+                        <input type="number" class="form-control" id="copies" value="1" min="1" max="50">
+                    </div>
+                    
+                    <button class="btn btn-primary w-100 mb-2" id="addLabel">
+                        <i>+</i> Add Label
+                    </button>
+                    
+                    <button class="btn btn-success w-100 mb-2" id="printLabels">
+                        <i>🖨️</i> Print Labels
+                    </button>
+                    
+                    <button class="btn btn-danger w-100" id="clearAll">
+                        <i>🗑️</i> Clear All
+                    </button>
+                </div>
+            </div>
+            
+            <div class="col-md-8">
+                <div class="preview-area" id="previewArea">
+                    <p class="text-muted text-center w-100">Your labels will appear here. Click "Add Label" to create labels.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            let labelCounter = 0;
+
+            function applyTextCase(text, textCase) {
+                switch(textCase) {
+                    case 'uppercase':
+                        return text.toUpperCase();
+                    case 'lowercase':
+                        return text.toLowerCase();
+                    case 'capitalize':
+                        return text.split(' ').map(word => 
+                            word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+                        ).join(' ');
+                    default:
+                        return text;
+                }
+            }
+
+            function updateLivePreview() {
+                const text = $('#labelText').val().trim() || 'Preview';
+                const topRightText = $('#topRightText').val().trim();
+                const fontSize = $('#fontSize').val();
+                const fontFamily = $('#fontFamily').val();
+                const textColor = $('#textColor').val();
+                const bgColor = $('#bgColor').val();
+                const textCase = $('#textCase').val();
+
+                const displayText = applyTextCase(text, textCase);
+
+                $('#liveMainText').text(displayText);
+                
+                if (topRightText) {
+                    $('#liveTopRight').text(topRightText).show();
+                } else {
+                    $('#liveTopRight').hide();
+                }
+
+                $('.live-preview-label').css({
+                    'font-size': fontSize + 'px',
+                    'font-family': fontFamily,
+                    'color': textColor,
+                    'background-color': bgColor
+                });
+            }
+
+            // Live preview updates on any input change
+            $('#labelText, #topRightText, #fontSize, #fontFamily, #textColor, #bgColor, #textCase').on('input change', function() {
+                updateLivePreview();
+            });
+
+            // Color preset clicks for text color
+            $('.color-preset').click(function() {
+                const color = $(this).data('color');
+                $('#textColor').val(color);
+                updateLivePreview();
+            });
+
+            // Color preset clicks for background color
+            $('.color-preset-bg').click(function() {
+                const color = $(this).data('color');
+                $('#bgColor').val(color);
+                updateLivePreview();
+            });
+
+            function createLabel() {
+                const text = $('#labelText').val().trim();
+                const topRightText = $('#topRightText').val().trim();
+                const fontSize = $('#fontSize').val();
+                const fontFamily = $('#fontFamily').val();
+                const textColor = $('#textColor').val();
+                const bgColor = $('#bgColor').val();
+                const textCase = $('#textCase').val();
+                const copies = parseInt($('#copies').val());
+
+                if (!text) {
+                    alert('Please enter label text');
+                    return;
+                }
+
+                // Remove placeholder text
+                $('#previewArea p.text-muted').remove();
+
+                const displayText = applyTextCase(text, textCase);
+
+                // Create multiple copies
+                for (let i = 0; i < copies; i++) {
+                    labelCounter++;
+                    const label = $('<div>')
+                        .addClass('label-item')
+                        .attr('id', 'label-' + labelCounter)
+                        .css({
+                            'font-size': fontSize + 'px',
+                            'font-family': fontFamily,
+                            'color': textColor,
+                            'background-color': bgColor,
+                            'text-transform': textCase === 'none' ? 'none' : textCase
+                        })
+                        .text(displayText);
+
+                    // Add top right text if provided
+                    if (topRightText) {
+                        const topRight = $('<span>')
+                            .addClass('label-top-right')
+                            .text(topRightText);
+                        label.prepend(topRight);
+                    }
+
+                    const deleteBtn = $('<button>')
+                        .addClass('delete-btn')
+                        .html('×')
+                        .click(function() {
+                            $(this).parent().remove();
+                            if ($('#previewArea .label-item').length === 0) {
+                                $('#previewArea').html('<p class="text-muted text-center w-100">Your labels will appear here. Click "Add Label" to create labels.</p>');
+                            }
+                        });
+
+                    label.append(deleteBtn);
+                    $('#previewArea').append(label);
+                }
+
+                // Clear inputs
+                $('#labelText').val('');
+                $('#topRightText').val('');
+                updateLivePreview();
+            }
+
+            $('#addLabel').click(function() {
+                createLabel();
+            });
+
+            $('#labelText').keypress(function(e) {
+                if (e.which === 13) {
+                    createLabel();
+                }
+            });
+
+            $('#printLabels').click(function() {
+                if ($('#previewArea .label-item').length === 0) {
+                    alert('No labels to print. Please add labels first.');
+                    return;
+                }
+                window.print();
+            });
+
+            $('#clearAll').click(function() {
+                if (confirm('Are you sure you want to clear all labels?')) {
+                    $('#previewArea').html('<p class="text-muted text-center w-100">Your labels will appear here. Click "Add Label" to create labels.</p>');
+                    labelCounter = 0;
+                }
+            });
+
+            // Initialize live preview
+            updateLivePreview();
+        });
+    </script>
+</body>
+</html>
