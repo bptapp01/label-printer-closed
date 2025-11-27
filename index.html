@@ -109,19 +109,47 @@
         @media print {
             body {
                 background: white;
+                padding: 0;
+                margin: 0;
             }
-            .control-panel, .no-print {
+            .container-fluid {
+                padding: 0;
+                margin: 0;
+                max-width: 100%;
+            }
+            .control-panel, .no-print, h2 {
                 display: none !important;
+            }
+            .row {
+                margin: 0;
+            }
+            .col-md-9 {
+                width: 100%;
+                padding: 0;
+                margin: 0;
             }
             .preview-area {
                 border: none;
                 min-height: auto;
+                padding: 10px;
+                margin: 0;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px;
+                justify-content: flex-start;
+                align-items: flex-start;
             }
             .label-item {
                 page-break-inside: avoid;
+                margin: 0;
+                flex-shrink: 0;
             }
             .delete-btn {
                 display: none !important;
+            }
+            @page {
+                margin: 10mm;
+                size: A4;
             }
         }
     </style>
@@ -131,7 +159,7 @@
         <h2 class="mb-4">Brand Label Printer</h2>
         
         <div class="row">
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <div class="control-panel">
                     <h5 class="mb-3">Label Settings</h5>
                     
@@ -149,7 +177,7 @@
 
                     <div class="mb-3">
                         <label class="form-label">Top Right Text (Optional)</label>
-                        <input type="text" class="form-control" id="topRightText" placeholder="">
+                        <input type="text" class="form-control" id="topRightText" placeholder="e.g., 56 inch panna">
                     </div>
                     
                     <div class="mb-3">
@@ -229,7 +257,7 @@
                 </div>
             </div>
             
-            <div class="col-md-8">
+            <div class="col-md-9">
                 <div class="preview-area" id="previewArea">
                     <p class="text-muted text-center w-100">Your labels will appear here. Click "Add Label" to create labels.</p>
                 </div>
