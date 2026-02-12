@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -32,23 +33,30 @@
                 width: 210mm;
                 height: 297mm;
                 margin: 0;
-                padding: 10mm;
+                padding: 8mm;
                 box-shadow: none !important;
+            }
+
+            #gridContainer {
+                height: calc(297mm - 16mm);
             }
         }
 
         .a4-page {
             width: 210mm;
-            min-height: 297mm;
-            padding: 10mm;
+            height: 297mm;
+            padding: 8mm;
             margin: 20px auto;
             background: white;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
 
+        #gridContainer {
+            height: calc(297mm - 16mm);
+        }
+
         .grid-box {
             border: 2px solid #333;
-            aspect-ratio: 1;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -77,6 +85,10 @@
             background-color: #bfdbfe !important;
             border-color: #3b82f6 !important;
             border-width: 3px;
+        }
+
+        .grid-box {
+            position: relative;
         }
 
         .icon-drag {
@@ -277,7 +289,7 @@
         let draggedIconName = null;
 
         function generateGrid() {
-            const rows = 8;  // Fixed 8x8 grid
+            const rows = 12;  // Increased to 12 rows to fill the page
             const cols = 8;
             const container = document.getElementById('gridContainer');
 
@@ -309,12 +321,36 @@
                     }
                 });
 
-                // Handle Enter key
+                // Handle Enter key to move to next box
                 box.addEventListener('keydown', (e) => {
                     if (e.key === 'Enter') {
                         e.preventDefault();
                         const nextBox = document.querySelector(`[data-index="${i + 1}"]`);
                         if (nextBox) nextBox.focus();
+                    } else if (e.key === 'Delete') {
+                        // Clear the entire box content on Delete key
+                        e.preventDefault();
+                        box.innerHTML = '';
+                    } else if (e.key === 'ArrowRight') {
+                        // Move to next box (right)
+                        e.preventDefault();
+                        const nextBox = document.querySelector(`[data-index="${i + 1}"]`);
+                        if (nextBox) nextBox.focus();
+                    } else if (e.key === 'ArrowLeft') {
+                        // Move to previous box (left)
+                        e.preventDefault();
+                        const prevBox = document.querySelector(`[data-index="${i - 1}"]`);
+                        if (prevBox) prevBox.focus();
+                    } else if (e.key === 'ArrowDown') {
+                        // Move down (8 boxes down for 8 columns)
+                        e.preventDefault();
+                        const downBox = document.querySelector(`[data-index="${i + 8}"]`);
+                        if (downBox) downBox.focus();
+                    } else if (e.key === 'ArrowUp') {
+                        // Move up (8 boxes up for 8 columns)
+                        e.preventDefault();
+                        const upBox = document.querySelector(`[data-index="${i - 8}"]`);
+                        if (upBox) upBox.focus();
                     }
                 });
 
@@ -381,8 +417,8 @@
                 box.innerHTML = `<i class="fas fa-${iconName}"></i>`;
             }
 
-            // Disable editing when icon is added
-            box.contentEditable = 'false';
+            // Keep box editable so user can click and delete with backspace
+            box.contentEditable = 'true';
         }
 
         function toggleSelection(index) {
@@ -411,9 +447,8 @@
             const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
             boxes.forEach((box, index) => {
-                if (index < alphabet.length) {
-                    box.innerHTML = alphabet[index];
-                }
+                const letterIndex = index % alphabet.length;
+                box.innerHTML = alphabet[letterIndex];
             });
 
             selectedBoxes.clear();
