@@ -1,322 +1,488 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Printable Template Generator</title>
-    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
     <style>
-        .grid-box i {
-            font-size: 79px !important;
+        :root {
+            --bg: #0f1117;
+            --surface: #1a1d27;
+            --surface2: #22263a;
+            --accent: #6c8eff;
+            --accent2: #a78bfa;
+            --accent3: #34d399;
+            --text: #e8eaf6;
+            --muted: #7b82a8;
+            --border: #2e3250;
+            --hover: #2a2f4a;
         }
 
-        @media print {
-            .no-print {
-                display: none !important;
-            }
-
-            .print-page {
-                page-break-after: always;
-            }
-
-            body {
-                margin: 0;
-                padding: 0;
-            }
-
-            .a4-page {
-                width: 210mm;
-                height: 297mm;
-                margin: 0;
-                padding: 8mm;
-                box-shadow: none !important;
-            }
-
-            #gridContainer {
-                height: calc(297mm - 16mm);
-            }
+        :root.light {
+            --bg: #f0f2f8;
+            --surface: #ffffff;
+            --surface2: #f4f5fb;
+            --accent: #4a6cf7;
+            --accent2: #7c5cbf;
+            --accent3: #10a47a;
+            --text: #1a1d2e;
+            --muted: #8892b0;
+            --border: #d8dcea;
+            --hover: #e8ecf7;
         }
 
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background: var(--bg);
+            font-family: 'DM Sans', sans-serif;
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        /* ── TOOLBAR ── */
+        .toolbar {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: 58px;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 0 20px;
+            z-index: 100;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.4);
+        }
+
+        .toolbar-brand {
+            font-family: 'Playfair Display', serif;
+            font-size: 17px;
+            color: var(--accent);
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .toolbar-divider {
+            width: 1px;
+            height: 28px;
+            background: var(--border);
+            flex-shrink: 0;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 13px;
+            border-radius: 7px;
+            border: 1px solid transparent;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 12.5px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.18s ease;
+            white-space: nowrap;
+        }
+
+        .btn-ghost {
+            background: transparent;
+            border-color: var(--border);
+            color: var(--muted);
+        }
+        .btn-ghost:hover {
+            background: var(--hover);
+            color: var(--text);
+            border-color: var(--accent);
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #fff;
+            border-color: var(--accent);
+        }
+        .btn-primary:hover {
+            background: #8aa5ff;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 14px rgba(108,142,255,0.35);
+        }
+
+        .btn-violet {
+            background: transparent;
+            border-color: var(--accent2);
+            color: var(--accent2);
+        }
+        .btn-violet:hover {
+            background: rgba(167,139,250,0.12);
+            transform: translateY(-1px);
+        }
+
+        .btn-green {
+            background: transparent;
+            border-color: var(--accent3);
+            color: var(--accent3);
+        }
+        .btn-green:hover {
+            background: rgba(52,211,153,0.12);
+            transform: translateY(-1px);
+        }
+
+        .btn-print {
+            background: var(--accent);
+            color: #fff;
+            border-color: var(--accent);
+            padding: 6px 16px;
+        }
+        .btn-print:hover {
+            background: #8aa5ff;
+            box-shadow: 0 0 0 3px rgba(108,142,255,0.2);
+        }
+
+        /* Icon palette */
+        .icon-palette {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+            margin-left: auto;
+        }
+
+        .palette-label {
+            font-size: 10px;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            flex-shrink: 0;
+        }
+
+        .icon-chip {
+            width: 32px;
+            height: 32px;
+            border-radius: 7px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: grab;
+            transition: all 0.15s;
+            color: var(--text);
+            font-size: 13px;
+            user-select: none;
+            flex-shrink: 0;
+        }
+
+        .icon-chip:hover {
+            background: var(--hover);
+            border-color: var(--accent);
+            color: var(--accent);
+            transform: scale(1.12);
+        }
+
+        .icon-chip:active { opacity: 0.6; cursor: grabbing; }
+
+        /* ── MAIN ── */
+        .main {
+            padding-top: 58px;
+            min-height: 100vh;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            background:
+                radial-gradient(ellipse 80% 50% at 50% -5%, rgba(108,142,255,0.08) 0%, transparent 70%),
+                var(--bg);
+        }
+
+        /* ── A4 PAGE ── */
         .a4-page {
             width: 210mm;
-            height: 297mm;
-            padding: 8mm;
-            margin: 20px auto;
-            background: white;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            min-height: 297mm;
+            padding: 10mm;
+            margin: 28px auto;
+            background: #ffffff;
+            border-radius: 4px;
+            box-shadow:
+                0 0 0 1px rgba(108,142,255,0.15),
+                0 8px 40px rgba(0,0,0,0.5),
+                0 2px 8px rgba(0,0,0,0.3);
         }
 
         #gridContainer {
-            height: calc(297mm - 16mm);
+            height: calc(297mm - 20mm);
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 4px;
         }
 
         .grid-box {
             border: none;
+            border-radius: 3px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 2rem;
-            font-weight: bold;
+            font-weight: 700;
+            font-family: 'Playfair Display', serif;
+            color: #1a1a2e;
             cursor: text;
-            transition: all 0.2s;
+            transition: background 0.15s;
             outline: none;
-        }
-
-        .grid-box:hover {
-            background-color: #f3f4f6;
-        }
-
-        .grid-box.selected {
-            background-color: #dbeafe;
-        }
-
-        .grid-box:focus {
-            background-color: #fef3c7;
-        }
-
-        .grid-box.drag-over {
-            background-color: #bfdbfe !important;
-        }
-
-        .grid-box {
             position: relative;
         }
 
-        .icon-drag {
-            user-select: none;
+        .grid-box i { font-size: 72px !important; color: #1a1a2e; }
+
+        .grid-box:hover  { background: rgba(108,142,255,0.06); }
+        .grid-box:focus  { background: rgba(251,191,36,0.1); }
+        .grid-box.selected { background: rgba(108,142,255,0.1); }
+        .grid-box.drag-over {
+            background: rgba(52,211,153,0.15) !important;
+            outline: 2px dashed #34d399;
+            outline-offset: -2px;
         }
 
-        .icon-drag:active {
-            opacity: 0.7;
+        /* ── MODALS ── */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.65);
+            backdrop-filter: blur(4px);
+            z-index: 200;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-overlay.open { display: flex; animation: fadeIn 0.2s ease; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .modal-box {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 28px;
+            width: 420px;
+            max-width: 90vw;
+            box-shadow: 0 24px 60px rgba(0,0,0,0.6);
+            animation: slideUp 0.22s ease;
+        }
+        .modal-box.wide { width: 560px; }
+
+        @keyframes slideUp {
+            from { transform: translateY(16px); opacity: 0; }
+            to   { transform: translateY(0);    opacity: 1; }
+        }
+
+        .modal-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 18px;
+            color: var(--text);
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .modal-title i { color: var(--accent); font-size: 15px; }
+
+        .modal-input {
+            width: 100%;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 9px;
+            padding: 12px 16px;
+            font-size: 32px;
+            text-align: center;
+            color: var(--text);
+            font-family: 'Playfair Display', serif;
+            outline: none;
+            transition: border 0.2s;
+            letter-spacing: 4px;
+        }
+        .modal-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(108,142,255,0.15);
+        }
+
+        .modal-hint {
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 8px;
+            text-align: center;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-top: 22px;
+        }
+
+        .arrow-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-top: 4px;
+        }
+
+        .arrow-btn {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 14px 8px;
+            color: var(--muted);
+            cursor: pointer;
+            transition: all 0.18s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 11px;
+        }
+        .arrow-btn i { font-size: 22px; color: var(--text); }
+        .arrow-btn:hover {
+            background: var(--hover);
+            border-color: var(--accent);
+            color: var(--accent);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 14px rgba(108,142,255,0.2);
+        }
+        .arrow-btn:hover i { color: var(--accent); }
+
+        /* ── THEME TOGGLE ── */
+        .theme-toggle {
+            width: 36px;
+            height: 36px;
+            border-radius: 9px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            color: var(--muted);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+        .theme-toggle:hover {
+            background: var(--hover);
+            border-color: var(--accent);
+            color: var(--accent);
+            transform: rotate(20deg) scale(1.08);
+        }
+
+        /* ── PRINT ── */
+        @media print {
+            .toolbar { display: none !important; }
+            body { background: white; }
+            .main { padding-top: 0; background: white; }
+            .a4-page {
+                width: 210mm; height: 297mm;
+                margin: 0; padding: 8mm;
+                box-shadow: none; border-radius: 0;
+            }
+            #gridContainer { height: calc(297mm - 16mm); }
+            .grid-box:hover,
+            .grid-box:focus,
+            .grid-box.selected { background: transparent !important; }
         }
     </style>
 </head>
+<body>
 
-<body class="bg-gray-100">
-    <!-- Control Panel -->
-    <div class="no-print fixed top-0 left-0 right-0 bg-white shadow-lg z-50 p-2">
-        <div class="max-w-7xl mx-auto">
-            <div class="flex items-center justify-between gap-4">
-                <!-- Title -->
-                <h1 class="text-lg font-bold">Template Generator</h1>
+    <!-- TOOLBAR -->
+    <div class="toolbar">
+        <div class="toolbar-brand">✦ Template Gen</div>
+        <div class="toolbar-divider"></div>
 
-                <!-- Actions -->
-                <div class="flex gap-2">
-                    <button onclick="clearAll()"
-                        class="px-3 py-1 text-sm bg-gray-600 text-white rounded hover:bg-gray-700">
-                        Clear All
-                    </button>
-                    <button onclick="fillAlphabet()"
-                        class="px-3 py-1 text-sm bg-purple-600 text-white rounded hover:bg-purple-700">
-                        Fill A-Z
-                    </button>
-                    <button data-bs-toggle="modal" data-bs-target="#letterModal"
-                        class="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700">
-                        Fill Same Letter
-                    </button>
-                    <button data-bs-toggle="modal" data-bs-target="#arrowModal"
-                        class="px-3 py-1 text-sm bg-teal-600 text-white rounded hover:bg-teal-700">
-                        Fill Same Arrow
-                    </button>
-                    <button onclick="window.print()"
-                        class="px-3 py-1 text-sm bg-indigo-600 text-white rounded hover:bg-indigo-700">
-                        Print
-                    </button>
-                </div>
+        <div class="btn-group">
+            <button class="btn btn-ghost" onclick="clearAll()">
+                <i class="fas fa-trash-alt" style="font-size:11px;"></i> Clear
+            </button>
+            <button class="btn btn-violet" onclick="fillAlphabet()">
+                <i class="fas fa-font" style="font-size:11px;"></i> A–Z
+            </button>
+            <button class="btn btn-ghost" onclick="openModal('letterModal')">
+                <i class="fas fa-keyboard" style="font-size:11px;"></i> Same Letter
+            </button>
+            <button class="btn btn-green" onclick="openModal('arrowModal')">
+                <i class="fas fa-arrows-alt" style="font-size:11px;"></i> Same Arrow
+            </button>
+        </div>
 
-                <!-- Icons -->
-                <div class="flex gap-1 flex-wrap">
-                    <!-- Arrow Up -->
-                    <div draggable="true" data-icon="arrow-up"
-                        class="icon-drag px-2 py-1 bg-gray-100 rounded hover:bg-gray-200 cursor-move">
-                        <i class="fas fa-arrow-up text-gray-700 text-lg"></i>
-                    </div>
-                    <!-- Arrow Down -->
-                    <div draggable="true" data-icon="arrow-down"
-                        class="icon-drag px-2 py-1 bg-gray-100 rounded hover:bg-gray-200 cursor-move">
-                        <i class="fas fa-arrow-down text-gray-700 text-lg"></i>
-                    </div>
-                    <!-- Arrow Left -->
-                    <div draggable="true" data-icon="arrow-left"
-                        class="icon-drag px-2 py-1 bg-gray-100 rounded hover:bg-gray-200 cursor-move">
-                        <i class="fas fa-arrow-left text-gray-700 text-lg"></i>
-                    </div>
-                    <!-- Arrow Right (standard) -->
-                    <div draggable="true" data-icon="arrow-right"
-                        class="icon-drag px-2 py-1 bg-gray-100 rounded hover:bg-gray-200 cursor-move">
-                        <i class="fas fa-arrow-right text-gray-700 text-lg"></i>
-                    </div>
-                    <!-- Circle Right Arrow -->
-                    <div draggable="true" data-icon="circle-right"
-                        class="icon-drag px-2 py-1 bg-gray-100 rounded hover:bg-gray-200 cursor-move">
-                        <i class="fa-solid fa-circle-right text-gray-700 text-lg"></i>
-                    </div>
-                    <!-- Angles Right (double chevron) -->
-                    <div draggable="true" data-icon="angles-right"
-                        class="icon-drag px-2 py-1 bg-gray-100 rounded hover:bg-gray-200 cursor-move">
-                        <i class="fa-solid fa-angles-right text-gray-700 text-lg"></i>
-                    </div>
-                    <!-- Right Long Arrow -->
-                    <div draggable="true" data-icon="right-long"
-                        class="icon-drag px-2 py-1 bg-gray-100 rounded hover:bg-gray-200 cursor-move">
-                        <i class="fa-solid fa-right-long text-gray-700 text-lg"></i>
-                    </div>
-                    <!-- Arrow Up-Right (diagonal) -->
-                    <div draggable="true" data-icon="arrow-up-right"
-                        class="icon-drag px-2 py-1 bg-gray-100 rounded hover:bg-gray-200 cursor-move">
-                        <i class="fas fa-arrow-up text-gray-700 text-lg"
-                            style="transform: rotate(45deg); display: inline-block;"></i>
-                    </div>
-                    <!-- Arrow Down-Right (diagonal) -->
-                    <div draggable="true" data-icon="arrow-down-right"
-                        class="icon-drag px-2 py-1 bg-gray-100 rounded hover:bg-gray-200 cursor-move">
-                        <i class="fas fa-arrow-down text-gray-700 text-lg"
-                            style="transform: rotate(-45deg); display: inline-block;"></i>
-                    </div>
-                    <!-- Arrow Down-Left (diagonal) -->
-                    <div draggable="true" data-icon="arrow-down-left"
-                        class="icon-drag px-2 py-1 bg-gray-100 rounded hover:bg-gray-200 cursor-move">
-                        <i class="fas fa-arrow-down text-gray-700 text-lg"
-                            style="transform: rotate(45deg); display: inline-block;"></i>
-                    </div>
-                    <!-- Arrow Up-Left (diagonal) -->
-                    <div draggable="true" data-icon="arrow-up-left"
-                        class="icon-drag px-2 py-1 bg-gray-100 rounded hover:bg-gray-200 cursor-move">
-                        <i class="fas fa-arrow-up text-gray-700 text-lg"
-                            style="transform: rotate(-45deg); display: inline-block;"></i>
-                    </div>
-                </div>
+        <div class="icon-palette">
+            <span class="palette-label">drag →</span>
+            <div class="icon-chip" draggable="true" data-icon="arrow-up" title="Up"><i class="fas fa-arrow-up"></i></div>
+            <div class="icon-chip" draggable="true" data-icon="arrow-down" title="Down"><i class="fas fa-arrow-down"></i></div>
+            <div class="icon-chip" draggable="true" data-icon="arrow-left" title="Left"><i class="fas fa-arrow-left"></i></div>
+            <div class="icon-chip" draggable="true" data-icon="arrow-right" title="Right"><i class="fas fa-arrow-right"></i></div>
+            <div class="icon-chip" draggable="true" data-icon="circle-right" title="Circle Right"><i class="fa-solid fa-circle-right"></i></div>
+            <div class="icon-chip" draggable="true" data-icon="angles-right" title="Angles Right"><i class="fa-solid fa-angles-right"></i></div>
+            <div class="icon-chip" draggable="true" data-icon="right-long" title="Long Right"><i class="fa-solid fa-right-long"></i></div>
+            <div class="icon-chip" draggable="true" data-icon="arrow-up-right" title="Up-Right"><i class="fas fa-arrow-up" style="transform:rotate(45deg);display:inline-block;"></i></div>
+            <div class="icon-chip" draggable="true" data-icon="arrow-down-right" title="Down-Right"><i class="fas fa-arrow-down" style="transform:rotate(-45deg);display:inline-block;"></i></div>
+            <div class="icon-chip" draggable="true" data-icon="arrow-down-left" title="Down-Left"><i class="fas fa-arrow-down" style="transform:rotate(45deg);display:inline-block;"></i></div>
+            <div class="icon-chip" draggable="true" data-icon="arrow-up-left" title="Up-Left"><i class="fas fa-arrow-up" style="transform:rotate(-45deg);display:inline-block;"></i></div>
+        </div>
+
+        <div class="toolbar-divider"></div>
+        <button class="theme-toggle" id="themeBtn" onclick="toggleTheme()" title="Toggle light/dark mode">
+            <i class="fas fa-moon" id="themeIcon"></i>
+        </button>
+        <button class="btn btn-print" onclick="window.print()">
+            <i class="fas fa-print" style="font-size:12px;"></i> Print
+        </button>
+    </div>
+
+    <!-- MAIN -->
+    <div class="main">
+        <div class="a4-page">
+            <div id="gridContainer"></div>
+        </div>
+    </div>
+
+    <!-- LETTER MODAL -->
+    <div class="modal-overlay" id="letterModal" onclick="closeOnOverlay(event,'letterModal')">
+        <div class="modal-box">
+            <div class="modal-title"><i class="fas fa-font"></i> Fill Same Letter</div>
+            <input type="text" id="letterInput" class="modal-input" maxlength="1" placeholder="A" autocomplete="off" spellcheck="false">
+            <div class="modal-hint">Type any letter — all boxes will be filled</div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" onclick="closeModal('letterModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="applyLetter()"><i class="fas fa-check"></i> Fill All</button>
             </div>
         </div>
     </div>
 
-    <!-- Spacer for fixed header -->
-    <div class="no-print" style="height: 60px;"></div>
-
-    <!-- Letter Modal -->
-    <div class="modal fade no-print" id="letterModal" tabindex="-1" aria-labelledby="letterModalLabel"
-        aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title" id="letterModalLabel">
-                        <i class="fas fa-font me-2"></i>Fill Same Letter
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                        aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <p class="text-muted mb-3">Enter a letter to fill all boxes:</p>
-                    <input type="text" id="letterInput" class="form-control form-control-lg text-center text-uppercase"
-                        maxlength="1" placeholder="Type a letter (A-Z)" autofocus>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" onclick="applyLetter()">
-                        <i class="fas fa-check me-1"></i>Fill All Boxes
-                    </button>
-                </div>
+    <!-- ARROW MODAL -->
+    <div class="modal-overlay" id="arrowModal" onclick="closeOnOverlay(event,'arrowModal')">
+        <div class="modal-box wide">
+            <div class="modal-title"><i class="fas fa-arrows-alt"></i> Fill Same Arrow</div>
+            <div class="arrow-grid">
+                <button class="arrow-btn" onclick="applyArrow('arrow-up')"><i class="fas fa-arrow-up"></i>Up</button>
+                <button class="arrow-btn" onclick="applyArrow('arrow-down')"><i class="fas fa-arrow-down"></i>Down</button>
+                <button class="arrow-btn" onclick="applyArrow('arrow-left')"><i class="fas fa-arrow-left"></i>Left</button>
+                <button class="arrow-btn" onclick="applyArrow('arrow-right')"><i class="fas fa-arrow-right"></i>Right</button>
+                <button class="arrow-btn" onclick="applyArrow('circle-right')"><i class="fa-solid fa-circle-right"></i>Circle Right</button>
+                <button class="arrow-btn" onclick="applyArrow('angles-right')"><i class="fa-solid fa-angles-right"></i>Angles Right</button>
+                <button class="arrow-btn" onclick="applyArrow('right-long')"><i class="fa-solid fa-right-long"></i>Long Right</button>
+                <button class="arrow-btn" onclick="applyArrow('arrow-up-right')"><i class="fas fa-arrow-up" style="transform:rotate(45deg);display:inline-block;"></i>Up-Right</button>
+                <button class="arrow-btn" onclick="applyArrow('arrow-down-right')"><i class="fas fa-arrow-down" style="transform:rotate(-45deg);display:inline-block;"></i>Down-Right</button>
+                <button class="arrow-btn" onclick="applyArrow('arrow-down-left')"><i class="fas fa-arrow-down" style="transform:rotate(45deg);display:inline-block;"></i>Down-Left</button>
+                <button class="arrow-btn" onclick="applyArrow('arrow-up-left')"><i class="fas fa-arrow-up" style="transform:rotate(-45deg);display:inline-block;"></i>Up-Left</button>
             </div>
-        </div>
-    </div>
-
-    <!-- Arrow Modal -->
-    <div class="modal fade no-print" id="arrowModal" tabindex="-1" aria-labelledby="arrowModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content">
-                <div class="modal-header bg-success text-white">
-                    <h5 class="modal-title" id="arrowModalLabel">
-                        <i class="fas fa-arrows-alt me-2"></i>Fill Same Arrow
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                        aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <p class="text-muted mb-4">Choose an arrow direction to fill all boxes:</p>
-                    <div class="row g-3">
-                        <div class="col-6 col-md-3">
-                            <button class="btn btn-outline-dark w-100 py-3" onclick="applyArrow('arrow-up')">
-                                <i class="fas fa-arrow-up fa-2x"></i>
-                                <div class="mt-2 small">Up</div>
-                            </button>
-                        </div>
-                        <div class="col-6 col-md-3">
-                            <button class="btn btn-outline-dark w-100 py-3" onclick="applyArrow('arrow-down')">
-                                <i class="fas fa-arrow-down fa-2x"></i>
-                                <div class="mt-2 small">Down</div>
-                            </button>
-                        </div>
-                        <div class="col-6 col-md-3">
-                            <button class="btn btn-outline-dark w-100 py-3" onclick="applyArrow('arrow-left')">
-                                <i class="fas fa-arrow-left fa-2x"></i>
-                                <div class="mt-2 small">Left</div>
-                            </button>
-                        </div>
-                        <div class="col-6 col-md-3">
-                            <button class="btn btn-outline-dark w-100 py-3" onclick="applyArrow('arrow-right')">
-                                <i class="fas fa-arrow-right fa-2x"></i>
-                                <div class="mt-2 small">Right</div>
-                            </button>
-                        </div>
-                        <div class="col-6 col-md-3">
-                            <button class="btn btn-outline-dark w-100 py-3" onclick="applyArrow('circle-right')">
-                                <i class="fa-solid fa-circle-right fa-2x"></i>
-                                <div class="mt-2 small">Circle Right</div>
-                            </button>
-                        </div>
-                        <div class="col-6 col-md-3">
-                            <button class="btn btn-outline-dark w-100 py-3" onclick="applyArrow('angles-right')">
-                                <i class="fa-solid fa-angles-right fa-2x"></i>
-                                <div class="mt-2 small">Angles Right</div>
-                            </button>
-                        </div>
-                        <div class="col-6 col-md-3">
-                            <button class="btn btn-outline-dark w-100 py-3" onclick="applyArrow('right-long')">
-                                <i class="fa-solid fa-right-long fa-2x"></i>
-                                <div class="mt-2 small">Long Right</div>
-                            </button>
-                        </div>
-                        <div class="col-6 col-md-3">
-                            <button class="btn btn-outline-dark w-100 py-3" onclick="applyArrow('arrow-up-right')">
-                                <i class="fas fa-arrow-up fa-2x" style="transform: rotate(45deg);"></i>
-                                <div class="mt-2 small">Up-Right</div>
-                            </button>
-                        </div>
-                        <div class="col-6 col-md-3">
-                            <button class="btn btn-outline-dark w-100 py-3" onclick="applyArrow('arrow-down-right')">
-                                <i class="fas fa-arrow-down fa-2x" style="transform: rotate(-45deg);"></i>
-                                <div class="mt-2 small">Down-Right</div>
-                            </button>
-                        </div>
-                        <div class="col-6 col-md-3">
-                            <button class="btn btn-outline-dark w-100 py-3" onclick="applyArrow('arrow-down-left')">
-                                <i class="fas fa-arrow-down fa-2x" style="transform: rotate(45deg);"></i>
-                                <div class="mt-2 small">Down-Left</div>
-                            </button>
-                        </div>
-                        <div class="col-6 col-md-3">
-                            <button class="btn btn-outline-dark w-100 py-3" onclick="applyArrow('arrow-up-left')">
-                                <i class="fas fa-arrow-up fa-2x" style="transform: rotate(-45deg);"></i>
-                                <div class="mt-2 small">Up-Left</div>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" onclick="closeModal('arrowModal')">Cancel</button>
             </div>
-        </div>
-    </div>
-
-    <!-- A4 Printable Page -->
-    <div id="printPage" class="a4-page print-page">
-        <div id="gridContainer" class="grid gap-2" style="grid-template-columns: repeat(8, 1fr);">
-            <!-- Grid will be generated here -->
         </div>
     </div>
 
@@ -325,11 +491,8 @@
         let draggedIconName = null;
 
         function generateGrid() {
-            const rows = 12;
-            const cols = 8;
+            const rows = 12, cols = 8;
             const container = document.getElementById('gridContainer');
-
-            container.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
             container.innerHTML = '';
             selectedBoxes.clear();
 
@@ -339,8 +502,7 @@
                 box.contentEditable = 'true';
                 box.dataset.index = i;
 
-                // Handle direct typing
-                box.addEventListener('input', (e) => {
+                box.addEventListener('input', e => {
                     const text = e.target.innerText.trim();
                     if (text.length > 1 && !text.includes('<')) {
                         e.target.innerText = text.slice(-1).toUpperCase();
@@ -355,173 +517,107 @@
                     }
                 });
 
-                // Keyboard navigation
-                box.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter') {
+                box.addEventListener('keydown', e => {
+                    const nav = { Enter: i+1, ArrowRight: i+1, ArrowLeft: i-1, ArrowDown: i+8, ArrowUp: i-8 };
+                    if (e.key === 'Delete') { e.preventDefault(); box.innerHTML = ''; return; }
+                    if (nav[e.key] !== undefined) {
                         e.preventDefault();
-                        const nextBox = document.querySelector(`[data-index="${i + 1}"]`);
-                        if (nextBox) nextBox.focus();
-                    } else if (e.key === 'Delete') {
-                        e.preventDefault();
-                        box.innerHTML = '';
-                    } else if (e.key === 'ArrowRight') {
-                        e.preventDefault();
-                        const nextBox = document.querySelector(`[data-index="${i + 1}"]`);
-                        if (nextBox) nextBox.focus();
-                    } else if (e.key === 'ArrowLeft') {
-                        e.preventDefault();
-                        const prevBox = document.querySelector(`[data-index="${i - 1}"]`);
-                        if (prevBox) prevBox.focus();
-                    } else if (e.key === 'ArrowDown') {
-                        e.preventDefault();
-                        const downBox = document.querySelector(`[data-index="${i + 8}"]`);
-                        if (downBox) downBox.focus();
-                    } else if (e.key === 'ArrowUp') {
-                        e.preventDefault();
-                        const upBox = document.querySelector(`[data-index="${i - 8}"]`);
-                        if (upBox) upBox.focus();
+                        const t = document.querySelector(`[data-index="${nav[e.key]}"]`);
+                        if (t) t.focus();
                     }
                 });
 
-                // Ctrl/Cmd + Click selection
-                box.addEventListener('click', (e) => {
-                    if (e.ctrlKey || e.metaKey) {
-                        e.preventDefault();
-                        toggleSelection(i);
-                    }
+                box.addEventListener('click', e => {
+                    if (e.ctrlKey || e.metaKey) { e.preventDefault(); toggleSelection(i); }
                 });
 
-                // Drag and drop
-                box.addEventListener('dragover', (e) => {
-                    e.preventDefault();
-                    box.classList.add('drag-over');
-                });
-
-                box.addEventListener('dragleave', () => {
-                    box.classList.remove('drag-over');
-                });
-
-                box.addEventListener('drop', (e) => {
+                box.addEventListener('dragover', e => { e.preventDefault(); box.classList.add('drag-over'); });
+                box.addEventListener('dragleave', () => box.classList.remove('drag-over'));
+                box.addEventListener('drop', e => {
                     e.preventDefault();
                     box.classList.remove('drag-over');
-                    if (draggedIconName) {
-                        dropIconIntoBox(box, draggedIconName);
-                    }
+                    if (draggedIconName) dropIconIntoBox(box, draggedIconName);
                 });
 
                 container.appendChild(box);
             }
-
-            setupIconDragAndDrop();
+            setupIconDrag();
         }
 
-        function setupIconDragAndDrop() {
-            const iconElements = document.querySelectorAll('.icon-drag');
-            iconElements.forEach(iconEl => {
-                iconEl.addEventListener('dragstart', (e) => {
-                    draggedIconName = iconEl.dataset.icon;
-                    e.dataTransfer.effectAllowed = 'copy';
-                });
-                iconEl.addEventListener('dragend', () => {
-                    draggedIconName = null;
-                });
+        function setupIconDrag() {
+            document.querySelectorAll('.icon-chip').forEach(el => {
+                el.addEventListener('dragstart', e => { draggedIconName = el.dataset.icon; e.dataTransfer.effectAllowed = 'copy'; });
+                el.addEventListener('dragend', () => { draggedIconName = null; });
             });
         }
 
         function dropIconIntoBox(box, iconName) {
-            // Diagonal arrows (rotation-based)
-            if (iconName === 'arrow-up-right') {
-                box.innerHTML = `<i class="fas fa-arrow-up" style="transform: rotate(45deg); display: inline-block;"></i>`;
-            } else if (iconName === 'arrow-down-right') {
-                box.innerHTML = `<i class="fas fa-arrow-down" style="transform: rotate(-45deg); display: inline-block;"></i>`;
-            } else if (iconName === 'arrow-down-left') {
-                box.innerHTML = `<i class="fas fa-arrow-down" style="transform: rotate(45deg); display: inline-block;"></i>`;
-            } else if (iconName === 'arrow-up-left') {
-                box.innerHTML = `<i class="fas fa-arrow-up" style="transform: rotate(-45deg); display: inline-block;"></i>`;
-            }
-            // FA Solid icons (circle-right, angles-right, right-long)
-            else if (iconName === 'circle-right' || iconName === 'angles-right' || iconName === 'right-long') {
-                box.innerHTML = `<i class="fa-solid fa-${iconName}"></i>`;
-            }
-            // Standard FA arrows
-            else {
-                box.innerHTML = `<i class="fas fa-${iconName}"></i>`;
-            }
+            const rotated = {
+                'arrow-up-right':   `<i class="fas fa-arrow-up"   style="transform:rotate(45deg);display:inline-block;"></i>`,
+                'arrow-down-right': `<i class="fas fa-arrow-down" style="transform:rotate(-45deg);display:inline-block;"></i>`,
+                'arrow-down-left':  `<i class="fas fa-arrow-down" style="transform:rotate(45deg);display:inline-block;"></i>`,
+                'arrow-up-left':    `<i class="fas fa-arrow-up"   style="transform:rotate(-45deg);display:inline-block;"></i>`,
+            };
+            const solid = ['circle-right','angles-right','right-long'];
+
+            if (rotated[iconName])       box.innerHTML = rotated[iconName];
+            else if (solid.includes(iconName)) box.innerHTML = `<i class="fa-solid fa-${iconName}"></i>`;
+            else                         box.innerHTML = `<i class="fas fa-${iconName}"></i>`;
 
             box.contentEditable = 'true';
         }
 
         function toggleSelection(index) {
             const box = document.querySelector(`[data-index="${index}"]`);
-            if (selectedBoxes.has(index)) {
-                selectedBoxes.delete(index);
-                box.classList.remove('selected');
-            } else {
-                selectedBoxes.add(index);
-                box.classList.add('selected');
-            }
+            if (selectedBoxes.has(index)) { selectedBoxes.delete(index); box.classList.remove('selected'); }
+            else { selectedBoxes.add(index); box.classList.add('selected'); }
         }
 
         function clearAll() {
-            const boxes = document.querySelectorAll('.grid-box');
-            boxes.forEach(box => {
-                box.innerHTML = '';
-                box.contentEditable = 'true';
-                box.classList.remove('selected');
-            });
+            document.querySelectorAll('.grid-box').forEach(b => { b.innerHTML=''; b.classList.remove('selected'); });
             selectedBoxes.clear();
         }
 
         function fillAlphabet() {
-            const boxes = document.querySelectorAll('.grid-box');
-            const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-            boxes.forEach((box, index) => {
-                box.innerHTML = alphabet[index % alphabet.length];
-            });
-            selectedBoxes.clear();
-            boxes.forEach(box => box.classList.remove('selected'));
+            const alpha = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            document.querySelectorAll('.grid-box').forEach((b,i) => { b.innerHTML = alpha[i % alpha.length]; });
         }
 
         function applyLetter() {
-            const letterInput = document.getElementById('letterInput');
-            const letter = letterInput.value.trim();
-            if (!letter) {
-                alert('Please enter a letter!');
-                return;
-            }
-            const upperLetter = letter[0].toUpperCase();
-            const boxes = document.querySelectorAll('.grid-box');
-            boxes.forEach(box => {
-                box.innerHTML = upperLetter;
-                box.contentEditable = 'true';
-            });
-            selectedBoxes.clear();
-            boxes.forEach(box => box.classList.remove('selected'));
-            letterInput.value = '';
-            bootstrap.Modal.getInstance(document.getElementById('letterModal')).hide();
+            const val = document.getElementById('letterInput').value.trim();
+            if (!val) return;
+            const letter = val[0].toUpperCase();
+            document.querySelectorAll('.grid-box').forEach(b => { b.innerHTML = letter; });
+            document.getElementById('letterInput').value = '';
+            closeModal('letterModal');
         }
 
         function applyArrow(iconName) {
-            const boxes = document.querySelectorAll('.grid-box');
-            boxes.forEach(box => {
-                dropIconIntoBox(box, iconName);
-            });
-            selectedBoxes.clear();
-            boxes.forEach(box => box.classList.remove('selected'));
-            bootstrap.Modal.getInstance(document.getElementById('arrowModal')).hide();
+            document.querySelectorAll('.grid-box').forEach(b => dropIconIntoBox(b, iconName));
+            closeModal('arrowModal');
         }
 
-        // Initialize
-        generateGrid();
+        function openModal(id) {
+            document.getElementById(id).classList.add('open');
+            if (id === 'letterModal') setTimeout(() => document.getElementById('letterInput').focus(), 80);
+        }
+        function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+        function closeOnOverlay(e, id) { if (e.target === document.getElementById(id)) closeModal(id); }
 
-        document.getElementById('letterModal').addEventListener('shown.bs.modal', function () {
-            document.getElementById('letterInput').focus();
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') { closeModal('letterModal'); closeModal('arrowModal'); }
         });
-
-        document.getElementById('letterInput').addEventListener('keypress', function (e) {
+        document.getElementById('letterInput').addEventListener('keypress', e => {
             if (e.key === 'Enter') applyLetter();
         });
+
+        function toggleTheme() {
+            const isLight = document.documentElement.classList.toggle('light');
+            document.getElementById('themeIcon').className = isLight ? 'fas fa-moon' : 'fas fa-sun';
+            document.getElementById('themeBtn').title = isLight ? 'Switch to dark mode' : 'Switch to light mode';
+        }
+
+        generateGrid();
     </script>
 </body>
-
 </html>
